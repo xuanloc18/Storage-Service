@@ -1,0 +1,72 @@
+server:
+  port: 8099
+  servlet:
+    context-path: /storage
+spring:
+  datasource:
+    url: "jdbc:postgresql://localhost:5432/storageservice"
+    username: postgres
+    password: "@Chuxuanloc26032003"
+  #    url: "jdbc:mysql://localhost:3306/iamservice"
+  #    username: root
+  #    password: 260303
+  mail:
+    host: "smtp.gmail.com"
+    port: 587
+    username: chuxuanloc2003@gmail.com
+    password: qhrv rtvp bzwp uhau
+    # S? d?ng m?t kh?u ?ng d?ng ? ?�y
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/CXL
+  jpa:
+    hibernate:
+      ddl-auto: update
+      dialect: org.hibernate.dialect.PostgreSQLDialect  # Ch? ??nh Dialect cho PostgreSQL
+    show-sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+security:
+  authentication:
+    jwt:
+      key-store : keystore.jks
+      key-store-password: cxlcxl
+      key-alias: viz
+
+
+
+feign:
+  hystrix:
+    enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    version: openapi_3_0
+
+  # L?u log v�o file
+  logging:
+    file:
+      name: =ogs/application.log   # ???ng d?n file log
+      path: logs                  # Th? m?c ch?a log (n?u kh�ng ch? ??nh file c? th?)
+      max-size: 10MB
+      max-history: 30
+
+file:
+  document:
+    path: storage
+
+
+
+
+
+
