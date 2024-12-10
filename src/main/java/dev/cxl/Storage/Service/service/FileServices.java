@@ -1,17 +1,21 @@
 package dev.cxl.Storage.Service.service;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import javax.imageio.ImageIO;
 
-import com.nimbusds.jose.util.Resource;
 import jakarta.annotation.PostConstruct;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
@@ -50,10 +54,15 @@ public class FileServices {
     }
 
     public Boolean createFile(MultipartFile file, String ownerId, Boolean visibility) throws IOException {
+        String currentDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+        Path uploadPath = Paths.get(documentPath, currentDate);
+        if (!java.nio.file.Files.exists(uploadPath)) {
+            java.nio.file.Files.createDirectories(uploadPath); // Tạo thư mục
+        }
         String fileName = file.getOriginalFilename();
         int index = fileName.lastIndexOf(".");
         String fileNameDes = UUID.randomUUID() + fileName.substring(index, fileName.length());
-        Path path = Paths.get(System.getProperty("user.dir"), documentPath);
+        Path path = Paths.get(System.getProperty("user.dir"), String.valueOf(uploadPath));
         String filePath = path + "/" + fileNameDes;
         file.transferTo(new File(filePath));
         filesRepository.save(Files.builder()
@@ -63,78 +72,29 @@ public class FileServices {
                 .filePath(filePath)
                 .visibility(visibility)
                 .fileType(file.getContentType())
+                .deleted(false)
                 .build());
 
         return true;
     }
 
-    public Files getFilePrivate(String id) {
+    public Files getFile(String id) {
         Files file = fileUtils.search(id);
-        if (!file.getVisibility()) {
-            throw new AppException(ErrorCode.FILE_PUBLIC);
-        }
-        return file;
-    }
-
-    public Files getFilePublic(String id) {
-        Files file = fileUtils.search(id);
-        if (file.getVisibility()) {
-            throw new AppException(ErrorCode.FILE_PRIVATE);
-        }
         return file;
     }
 
     public Boolean deleteFile(String id) {
         Files file = fileUtils.search(id);
         file.setDeleted(true);
+        File file1 = new File(file.getFilePath());
+        file1.delete();
         filesRepository.save(file);
         return true;
     }
 
-    public ResponseEntity<InputStreamResource> viewFile(String id) throws MalformedURLException, IOException {
-        Files file = fileUtils.search(id);
-        Path path = Paths.get(file.getFilePath());
-
-        if (!path.toFile().exists()) {
-            throw new AppException(ErrorCode.FILE_NOT_EXIST);
-        }
-
-        // Xác định loại MIME của file
-        String contentType = file.getFileType(); // file.getContentType() hoặc kiểm tra bằng cách khác
-
-        // Đọc file dưới dạng InputStream
-        InputStreamResource resource = new InputStreamResource(new FileInputStream(path.toFile()));
-
-        // Đặt headers cho Content-Type và Content-Disposition
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_TYPE, contentType);
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=" + path.getFileName());
-
-        return ResponseEntity.ok()
-                .headers(headers)
-                .contentLength(path.toFile().length())
-                .body(resource);
-    }
-    public Files updateFile(String id,String ownerId,MultipartFile fileUpdate) throws MalformedURLException, IOException {
-        Files file = fileUtils.search(id);
-        if(! file.getOwnerId().equals(ownerId))
-        {
-            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
-        }
-        File file1 = new File(file.getFilePath());
-        file1.delete();
-        String fileName = fileUpdate.getOriginalFilename();
-        int index = fileName.lastIndexOf(".");
-        String fileNameDes = UUID.randomUUID() + fileName.substring(index, fileName.length());
-        Path path = Paths.get(System.getProperty("user.dir"), documentPath);
-        String filePath = path + "/" + fileNameDes;
-        fileUpdate.transferTo(new File(filePath));
-        file.setFilePath(filePath);
-        return  filesRepository.save(file);
-
-    }
     public ResponseEntity<?> downloadFile(String id) throws IOException {
-        Files files=fileUtils.search(id);
+        Files files = fileUtils.search(id); // Giả sử fileUtils đã được khởi tạo và có phương thức search(id)
+
         try {
             // Tạo đối tượng Path trỏ đến file
             Path filePath = Paths.get(files.getFilePath());
@@ -145,16 +105,88 @@ public class FileServices {
                 return ResponseEntity.notFound().build();
             }
 
-            // Trả về file cùng với header cho trình duyệt tải xuống
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + files.getFileName() + "\"")
-                    .body(resource);
+            // Xác định loại MIME của file
+            String mimeType = files.getFileType();
+
+            // Kiểm tra nếu là ảnh (image/jpeg, image/png, image/gif, v.v.)
+            if (mimeType.startsWith("image/")) {
+                // Trả về file trực tiếp cho trình duyệt để hiển thị
+                return ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(mimeType)) // Đảm bảo trình duyệt nhận diện đúng loại file
+                        .body(resource);
+            } else {
+                // Nếu không phải ảnh, yêu cầu tải xuống
+                return ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(mimeType))
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + files.getFileName() + "\"")
+                        .body(resource);
+            }
 
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(500).build();
         }
     }
 
+    public ResponseEntity<InputStreamResource> viewFile(String id, Integer width, Integer height, Double ratio)
+            throws IOException {
+        // Tìm file
+        Files file = fileUtils.search(id);
+        Path path = Paths.get(file.getFilePath());
+
+        if (!path.toFile().exists()) {
+            throw new AppException(ErrorCode.FILE_NOT_EXIST);
+        }
+
+        // Kiểm tra loại file là ảnh
+        String contentType = file.getFileType();
+        if (!contentType.startsWith("image/")) {
+            throw new AppException(ErrorCode.INVALID_FILE_TYPE);
+        }
+
+        // Đọc file gốc
+        BufferedImage originalImage = ImageIO.read(path.toFile());
+        BufferedImage resizedImage = originalImage;
+
+        // Điều chỉnh kích thước theo yêu cầu
+        if (ratio != null) {
+            int newWidth = (int) (originalImage.getWidth() * ratio);
+            int newHeight = (int) (originalImage.getHeight() * ratio);
+            resizedImage = resizeImage(originalImage, newWidth, newHeight);
+        } else if (width != null || height != null) {
+            int newWidth = width != null ? width : originalImage.getWidth();
+            int newHeight = height != null ? height : originalImage.getHeight();
+            resizedImage = resizeImage(originalImage, newWidth, newHeight);
+        }
+
+        // Ghi ảnh đã chỉnh sửa vào OutputStream
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ImageIO.write(resizedImage, "png", outputStream); // Đảm bảo đúng format (png/jpg)
+        byte[] imageBytes = outputStream.toByteArray();
+
+        // Tạo InputStreamResource từ byte[]
+        InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(imageBytes));
+
+        // Trả về kết quả
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, contentType);
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=" + path.getFileName());
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentLength(imageBytes.length)
+                .body(resource);
+    }
+
+    // Helper: Resize ảnh
+    private BufferedImage resizeImage(BufferedImage originalImage, int width, int height) {
+        Image scaledImage = originalImage.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = resizedImage.createGraphics();
+        g2d.drawImage(scaledImage, 0, 0, null);
+        g2d.dispose();
+        return resizedImage;
+    }
 
     @PostConstruct
     public void init() throws IOException {
@@ -169,5 +201,4 @@ public class FileServices {
             System.out.println("Upload directory already exists at: " + path.toAbsolutePath());
         }
     }
-
 }

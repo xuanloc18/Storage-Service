@@ -34,6 +34,7 @@ public enum ErrorCode {
     FILE_EXIST(1019, "file exist", HttpStatus.BAD_REQUEST),
     FILE_NOT_EXIST(1019, "file not exist", HttpStatus.BAD_REQUEST),
     FILE_PRIVATE(1019, "file private", HttpStatus.BAD_REQUEST),
+    INVALID_FILE_TYPE(1019, "invalid", HttpStatus.BAD_REQUEST),
     FILE_PUBLIC(1019, "file public", HttpStatus.BAD_REQUEST);
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

@@ -29,4 +29,18 @@ public class FileUtils {
         Files files = filesRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.FILE_NOT_EXIST));
         return files;
     }
+
+    public void checkPublic(String id) {
+        Files files = search(id);
+        if (!files.getVisibility()) {
+            throw new AppException(ErrorCode.FILE_PRIVATE);
+        }
+    }
+
+    public void checkPrivate(String id) {
+        Files files = search(id);
+        if (files.getVisibility()) {
+            throw new AppException(ErrorCode.FILE_PUBLIC);
+        }
+    }
 }
