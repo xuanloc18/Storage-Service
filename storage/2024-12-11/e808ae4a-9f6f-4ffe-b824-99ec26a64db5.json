@@ -1,0 +1,388 @@
+{
+	"info": {
+		"_postman_id": "09648f6d-81ee-4669-9754-362c80c13493",
+		"name": "IAM",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "35967337"
+	},
+	"item": [
+		{
+			"name": "create user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\r\n     {\r\n            \"userName\": \"CwwssXLL\",\r\n            \"userMail\": \"chuxuanswwlosc20v3@gmail.com\",\r\n            \"passWord\": \"123456789\",\r\n            \"firstName\": \"CXL\",\r\n            \"lastName\": \"CXL\",\r\n            \"dateOfBirth\": \"2000-10-10\"\r\n\r\n\r\n            \r\n        }\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8088/iam/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8088",
+					"path": [
+						"iam",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "llogin",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "  {\r\n            \"userMail\": \"chuxuanloc2003@gmail.com\",\r\n            \"passWord\": \"123456789\"\r\n        }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8088/iam/auth/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8088",
+					"path": [
+						"iam",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "tfa-two",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "  {\r\n            \"userMail\": \"chuxuanloc2003@gmail.com\",\r\n            \"otp\": \"654450\"\r\n        }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8088/iam/auth/tfa-two",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8088",
+					"path": [
+						"iam",
+						"auth",
+						"tfa-two"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get Role",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "  {\r\n            \"name\": \"QUANLY\",\r\n            \"code\": \"QUANLY\"   ,\r\n            \"description\": \"Quản lý\"  \r\n        }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8088/iam/roles?page=1&pagesize=1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8088",
+					"path": [
+						"iam",
+						"roles"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "pagesize",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post Role",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "  {\r\n            \"name\": \"QUANLY\",\r\n            \"code\": \"QUANLY\"   ,\r\n            \"description\": \"Quản lý\"  \r\n        }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8088/iam/roles",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8088",
+					"path": [
+						"iam",
+						"roles"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1",
+							"disabled": true
+						},
+						{
+							"key": "pagesize",
+							"value": "1",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "post  permission",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "  {\r\n            \"name\": \"Thêm\",\r\n            \"resourceCode\": \"ROLE_DATA\"   ,\r\n            \"scope\": \"CREATE\"  \r\n        }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8088/iam/permissions",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8088",
+					"path": [
+						"iam",
+						"permissions"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1",
+							"disabled": true
+						},
+						{
+							"key": "pagesize",
+							"value": "1",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get permission",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "  {\r\n            \"name\": \"QUANLY\",\r\n            \"code\": \"QUANLY\"   ,\r\n            \"description\": \"Quản lý\"  \r\n        }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8088/iam/permissions?page=4&pagesize=1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8088",
+					"path": [
+						"iam",
+						"permissions"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "4"
+						},
+						{
+							"key": "pagesize",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create user role",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8088/iam/user-role?userMail=chuxuanloc2003@gmail.com&roleCode=ADMIN",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8088",
+					"path": [
+						"iam",
+						"user-role"
+					],
+					"query": [
+						{
+							"key": "userMail",
+							"value": "chuxuanloc2003@gmail.com"
+						},
+						{
+							"key": "roleCode",
+							"value": "ADMIN"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete user role",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8088/iam/user-role?userMail=chuxuanloc2003@gmail.com&roleCode=ADMIN",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8088",
+					"path": [
+						"iam",
+						"user-role"
+					],
+					"query": [
+						{
+							"key": "userMail",
+							"value": "chuxuanloc2003@gmail.com"
+						},
+						{
+							"key": "roleCode",
+							"value": "ADMIN"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create role per",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8088/iam/user-role?userMail=chuxuanloc2003@gmail.com&roleCode=ADMIN",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8088",
+					"path": [
+						"iam",
+						"user-role"
+					],
+					"query": [
+						{
+							"key": "userMail",
+							"value": "chuxuanloc2003@gmail.com"
+						},
+						{
+							"key": "roleCode",
+							"value": "ADMIN"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete role per",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8088/iam/user-role?userMail=chuxuanloc2003@gmail.com&roleCode=ADMIN",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8088",
+					"path": [
+						"iam",
+						"user-role"
+					],
+					"query": [
+						{
+							"key": "userMail",
+							"value": "chuxuanloc2003@gmail.com"
+						},
+						{
+							"key": "roleCode",
+							"value": "ADMIN"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

@@ -20,8 +20,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeHttpRequests(request -> request.requestMatchers(SWAGGER_ENDPOINT)
                 .permitAll()
-                //                .requestMatchers("/public/**").permitAll()
-                //                .requestMatchers("/private/**").authenticated()
+//                                .requestMatchers("/public/**").permitAll()
+//                                .requestMatchers("/private/**").authenticated()
                 .anyRequest()
                 .permitAll());
         //

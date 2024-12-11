@@ -18,7 +18,9 @@ import jakarta.annotation.PostConstruct;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -99,15 +101,12 @@ public class FileServices {
             // Tạo đối tượng Path trỏ đến file
             Path filePath = Paths.get(files.getFilePath());
             UrlResource resource = new UrlResource(filePath.toUri());
-
             // Kiểm tra xem file có tồn tại không
             if (!resource.exists()) {
                 return ResponseEntity.notFound().build();
             }
-
             // Xác định loại MIME của file
             String mimeType = files.getFileType();
-
             // Kiểm tra nếu là ảnh (image/jpeg, image/png, image/gif, v.v.)
             if (mimeType.startsWith("image/")) {
                 // Trả về file trực tiếp cho trình duyệt để hiển thị
@@ -121,12 +120,34 @@ public class FileServices {
                         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + files.getFileName() + "\"")
                         .body(resource);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).build();
         }
     }
+    public ResponseEntity<Resource> downloadFile2(String fileId) throws IOException {
+        Resource resource = getContent(fileId);
+        Files file = fileUtils.search(fileId);
+        String mimeType = file.getFileType();
+        if (mimeType == null || mimeType.isEmpty()) {
+            mimeType = "application/octet-stream";
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(mimeType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFileName() + "\"")
+                .body(resource);
+    }
+    public Resource getContent(String fileId) throws IOException {
+        Files fileEntity = fileUtils.search(fileId);
+        Path path = Paths.get(fileEntity.getFilePath());
+        Resource resource = new FileSystemResource(path);
+        if (!resource.exists()) {
+            throw new IOException("File not found: " + fileEntity.getFileName());
+        }
+        return resource;
+    }
+
+
 
     public ResponseEntity<InputStreamResource> viewFile(String id, Integer width, Integer height, Double ratio)
             throws IOException {

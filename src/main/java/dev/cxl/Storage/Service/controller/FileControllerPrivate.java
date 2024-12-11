@@ -50,6 +50,7 @@ public class FileControllerPrivate {
             @RequestParam(value = "height", required = false) Integer height,
             @RequestParam(value = "ratio", required = false) Double ratio)
             throws IOException {
+
         fileUtils.checkPrivate(fileID);
         return fileServices.viewFile(fileID, width, height, ratio);
     }
@@ -64,6 +65,14 @@ public class FileControllerPrivate {
     public ResponseEntity<?> downloadFile(@PathVariable("fileID") String fileID) throws IOException {
 
         return fileServices.downloadFile(fileID);
+    }
+    @GetMapping("/{fileId}/download2")
+    public ResponseEntity<?> downloadFile2(@PathVariable("fileId") String fileId){
+        try{
+            return fileServices.downloadFile2(fileId);
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     @GetMapping("/getFiles")
