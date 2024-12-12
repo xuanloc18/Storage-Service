@@ -3,8 +3,6 @@ package dev.cxl.Storage.Service.controller;
 import java.io.IOException;
 import java.util.List;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -17,18 +15,18 @@ import dev.cxl.Storage.Service.entity.Files;
 import dev.cxl.Storage.Service.repository.FilesRepositoryImpl;
 import dev.cxl.Storage.Service.service.FileServices;
 import dev.cxl.Storage.Service.service.FileUtils;
+import lombok.RequiredArgsConstructor;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/private/files")
 public class FileControllerPrivate {
 
-    private  final FileUtils fileUtils;
+    private final FileUtils fileUtils;
 
+    private final FileServices fileServices;
 
-    private  final FileServices fileServices;
-
-
-    private  final FilesRepositoryImpl filesRepositoryImpl;
+    private final FilesRepositoryImpl filesRepositoryImpl;
 
     @PostMapping()
     public APIResponse<String> createFiles(
@@ -37,6 +35,7 @@ public class FileControllerPrivate {
         fileServices.createMoreFile(files, ownerID, false);
         return APIResponse.<String>builder().result("Thành công").build();
     }
+
     @GetMapping("/{fileID}")
     public APIResponse<Files> getFilePrivate(@PathVariable("fileID") String fileID) {
         fileUtils.checkPrivate(fileID);
@@ -66,17 +65,9 @@ public class FileControllerPrivate {
 
         return fileServices.downloadFile(fileID);
     }
-    @GetMapping("/{fileId}/download2")
-    public ResponseEntity<?> downloadFile2(@PathVariable("fileId") String fileId){
-        try{
-            return fileServices.downloadFile2(fileId);
-        } catch (IOException e) {
-            throw new RuntimeException(e.getMessage());
-        }
-    }
 
-    @GetMapping("/getFiles")
-    public APIResponse<?> getFiles(@ModelAttribute FilesSearchRequest request) throws IOException {
+    @PostMapping("/getFiles")
+    public APIResponse<Page<Files>> getFiles(@RequestBody FilesSearchRequest request) throws IOException {
 
         return APIResponse.<Page<Files>>builder()
                 .result(filesRepositoryImpl.search(request))

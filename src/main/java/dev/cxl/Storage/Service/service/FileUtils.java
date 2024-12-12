@@ -30,6 +30,13 @@ public class FileUtils {
         return files;
     }
 
+    public Files searchProfile(String id) {
+        Files files = filesRepository
+                .findFilesByIDAndDeletedFalse(id)
+                .orElseThrow(() -> new AppException(ErrorCode.FILE_NOT_EXIST));
+        return files;
+    }
+
     public void checkPublic(String id) {
         Files files = search(id);
         if (!files.getVisibility()) {

@@ -18,9 +18,7 @@ import jakarta.annotation.PostConstruct;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -55,7 +53,18 @@ public class FileServices {
         return true;
     }
 
-    public Boolean createFile(MultipartFile file, String ownerId, Boolean visibility) throws IOException {
+    public String createProfile(MultipartFile files, String ownerId) throws IOException {
+        if (filesRepository.existsFilesByOwnerIdAndDeletedFalse(ownerId)) {
+            Files file =
+                    filesRepository.findFilesByOwnerIdAndDeletedFalse(ownerId).orElseThrow();
+            deleteFile(file.getID());
+        }
+        Files files1 = createFile(files, ownerId, true);
+        files1.getID();
+        return files1.getID();
+    }
+
+    public Files createFile(MultipartFile file, String ownerId, Boolean visibility) throws IOException {
         String currentDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
         Path uploadPath = Paths.get(documentPath, currentDate);
         if (!java.nio.file.Files.exists(uploadPath)) {
@@ -67,7 +76,7 @@ public class FileServices {
         Path path = Paths.get(System.getProperty("user.dir"), String.valueOf(uploadPath));
         String filePath = path + "/" + fileNameDes;
         file.transferTo(new File(filePath));
-        filesRepository.save(Files.builder()
+        return filesRepository.save(Files.builder()
                 .ownerId(ownerId)
                 .fileName(fileName)
                 .fileSize(file.getSize())
@@ -76,8 +85,6 @@ public class FileServices {
                 .fileType(file.getContentType())
                 .deleted(false)
                 .build());
-
-        return true;
     }
 
     public Files getFile(String id) {
@@ -125,29 +132,6 @@ public class FileServices {
             return ResponseEntity.status(500).build();
         }
     }
-    public ResponseEntity<Resource> downloadFile2(String fileId) throws IOException {
-        Resource resource = getContent(fileId);
-        Files file = fileUtils.search(fileId);
-        String mimeType = file.getFileType();
-        if (mimeType == null || mimeType.isEmpty()) {
-            mimeType = "application/octet-stream";
-        }
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(mimeType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFileName() + "\"")
-                .body(resource);
-    }
-    public Resource getContent(String fileId) throws IOException {
-        Files fileEntity = fileUtils.search(fileId);
-        Path path = Paths.get(fileEntity.getFilePath());
-        Resource resource = new FileSystemResource(path);
-        if (!resource.exists()) {
-            throw new IOException("File not found: " + fileEntity.getFileName());
-        }
-        return resource;
-    }
-
-
 
     public ResponseEntity<InputStreamResource> viewFile(String id, Integer width, Integer height, Double ratio)
             throws IOException {

@@ -43,8 +43,10 @@ public class FilesRepositoryImpl implements FilesRepositoryCustom {
         Pageable pageable = PageRequest.of(request.getPageIndex() - 1, request.getPageSize());
 
         // Trả về PageImpl với số lượng bản ghi và các tham số phân trang
+        //        new PageImpl<>(resultList, pageable, count(request));
         return new PageImpl<>(resultList, pageable, count(request));
     }
+
     @Override
     public Long count(FilesSearchRequest request) {
         Map<String, Object> values = new HashMap<>();
